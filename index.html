@@ -1459,6 +1459,7 @@ curl -sI -H "Origin: https://evil.com" https://타겟사이트.com/api | grep -i
           <tr><th>헤더</th><th>방향</th><th>설명</th><th>예시</th></tr>
           <tr><td><code>Host</code></td><td>요청</td><td>요청 대상 호스트명+포트. HTTP/1.1부터 필수이며 가상 호스팅(한 서버에 여러 도메인)의 기준이 됨</td><td><code>Host: example.com</code></td></tr>
           <tr><td><code>User-Agent</code></td><td>요청</td><td>클라이언트 소프트웨어 식별 (브라우저·OS·봇 등)</td><td><code>User-Agent: Mozilla/5.0 ...</code></td></tr>
+          <tr><td><code>Sec-CH-UA</code> 계열</td><td>요청</td><td>User-Agent 문자열을 그대로 파싱해 지문 추적하는 것을 줄이려는 최신 대안(Client Hints). 브라우저/버전/모바일 여부 등을 필요할 때만 별도 헤더로 제공</td><td><code>Sec-CH-UA-Platform: "macOS"</code></td></tr>
           <tr><td><code>Referer</code></td><td>요청</td><td>직전 페이지 URL (스펙 오타로 굳어진 철자). 보안 관점은 <a href="#rp">Referrer-Policy</a> 참고</td><td><code>Referer: https://example.com/page</code></td></tr>
           <tr><td><code>Origin</code></td><td>요청</td><td>요청을 보낸 출처(scheme+host+port). CORS·POST 요청에서 주로 검증 대상</td><td><code>Origin: https://example.com</code></td></tr>
           <tr><td><code>Date</code></td><td>요청/응답</td><td>메시지가 생성된 시각</td><td><code>Date: Mon, 06 Jul 2026 09:00:00 GMT</code></td></tr>
@@ -1475,7 +1476,7 @@ curl -sI -H "Origin: https://evil.com" https://타겟사이트.com/api | grep -i
           <tr><td><code>Accept-Language</code></td><td>요청</td><td>선호 언어와 우선순위</td><td><code>Accept-Language: ko-KR,ko;q=0.9,en;q=0.8</code></td></tr>
           <tr><td><code>Accept-Encoding</code></td><td>요청</td><td>클라이언트가 지원하는 압축 방식</td><td><code>Accept-Encoding: gzip, deflate, br</code></td></tr>
           <tr><td><code>Accept-Charset</code></td><td>요청</td><td>선호 문자셋 — 현재는 사실상 UTF-8로 고정되어 거의 쓰이지 않음</td><td><code>Accept-Charset: utf-8</code></td></tr>
-          <tr><td><code>Vary</code></td><td>응답</td><td>캐시가 같은 URL이라도 이 헤더들의 값에 따라 응답을 구분 저장해야 함을 지시</td><td><code>Vary: Accept-Encoding, Accept-Language</code></td></tr>
+          <tr><td><code>Vary</code></td><td>응답</td><td>같은 URL이라도 여기 나열한 요청 헤더(예: Accept-Encoding)의 값이 다르면 캐시가 별도 응답으로 구분해서 저장해야 함을 지시 — 없으면 압축된 응답이 압축을 지원하지 않는 클라이언트에게 캐시로 잘못 전달될 수 있음</td><td><code>Vary: Accept-Encoding, Accept-Language</code></td></tr>
         </table>
       </div>
     </div>
@@ -1487,7 +1488,7 @@ curl -sI -H "Origin: https://evil.com" https://타겟사이트.com/api | grep -i
           <tr><th>헤더</th><th>방향</th><th>설명</th><th>예시</th></tr>
           <tr><td><code>ETag</code></td><td>응답</td><td>리소스 버전을 나타내는 식별자(보통 해시값) — <code>If-None-Match</code>와 짝</td><td><code>ETag: "33a64df551425fcc"</code></td></tr>
           <tr><td><code>Last-Modified</code></td><td>응답</td><td>리소스 마지막 수정 시각 — <code>If-Modified-Since</code>와 짝</td><td><code>Last-Modified: Tue, 15 Jun 2026 09:00:00 GMT</code></td></tr>
-          <tr><td><code>If-None-Match</code></td><td>요청</td><td>ETag가 다를 때만 새로 응답 (조건부 GET, 같으면 304)</td><td><code>If-None-Match: "33a64df551425fcc"</code></td></tr>
+          <tr><td><code>If-None-Match</code></td><td>요청</td><td>ETag가 다를 때만 새로 응답 (같으면 본문 없이 <strong>304 Not Modified</strong>만 반환해 대역폭 절약)</td><td><code>If-None-Match: "33a64df551425fcc"</code></td></tr>
           <tr><td><code>If-Modified-Since</code></td><td>요청</td><td>지정 시각 이후 변경된 경우에만 응답</td><td><code>If-Modified-Since: Tue, 15 Jun 2026 09:00:00 GMT</code></td></tr>
           <tr><td><code>If-Match</code> / <code>If-Unmodified-Since</code></td><td>요청</td><td>리소스가 그 사이 변경되지 않았을 때만 처리 — PUT 등에서 동시 수정 충돌 방지</td><td><code>If-Match: "33a64df551425fcc"</code></td></tr>
           <tr><td><code>Age</code></td><td>응답</td><td>캐시에 저장된 이후 경과 시간(초)</td><td><code>Age: 3600</code></td></tr>
@@ -1519,9 +1520,10 @@ curl -sI -H "Origin: https://evil.com" https://타겟사이트.com/api | grep -i
           <tr><td><code>Connection</code></td><td>요청/응답</td><td>이 연결을 유지할지 여부</td><td><code>Connection: keep-alive</code></td></tr>
           <tr><td><code>Keep-Alive</code></td><td>응답</td><td>연결 유지 타임아웃과 최대 요청 수</td><td><code>Keep-Alive: timeout=5, max=1000</code></td></tr>
           <tr><td><code>Upgrade</code></td><td>요청/응답</td><td>다른 프로토콜로 전환 요청 (예: HTTP → WebSocket)</td><td><code>Upgrade: websocket</code></td></tr>
-          <tr><td><code>Location</code></td><td>응답</td><td>리다이렉트 대상 URL(3xx) 또는 새로 생성된 리소스 위치(201)</td><td><code>Location: /login</code></td></tr>
-          <tr><td><code>Allow</code></td><td>응답</td><td>해당 리소스가 지원하는 HTTP 메서드 목록 — 405 응답과 함께 옴</td><td><code>Allow: GET, POST, HEAD</code></td></tr>
-          <tr><td><code>Retry-After</code></td><td>응답</td><td>언제 다시 요청해도 되는지 — 429·503 응답과 함께 옴</td><td><code>Retry-After: 120</code></td></tr>
+          <tr><td><code>Expect</code></td><td>요청</td><td>큰 본문을 보내기 전 서버가 요청을 받아줄지 먼저 확인 — 서버가 <strong>100 Continue</strong>로 응답해야 클라이언트가 실제 본문을 전송. 일부 프록시·WAF가 이 흐름을 잘못 처리해 요청이 멈춘 것처럼 보이는 원인이 되기도 함</td><td><code>Expect: 100-continue</code></td></tr>
+          <tr><td><code>Location</code></td><td>응답</td><td>리다이렉트 대상 URL(<strong>3xx</strong> 응답, 예: 301/302) 또는 새로 생성된 리소스 위치(<strong>201 Created</strong>)</td><td><code>Location: /login</code></td></tr>
+          <tr><td><code>Allow</code></td><td>응답</td><td>해당 리소스가 지원하는 HTTP 메서드 목록 — 지원하지 않는 메서드로 요청했을 때의 응답인 <strong>405 Method Not Allowed</strong>와 함께 옴</td><td><code>Allow: GET, POST, HEAD</code></td></tr>
+          <tr><td><code>Retry-After</code></td><td>응답</td><td>언제 다시 요청해도 되는지 — 너무 많은 요청을 보냈을 때의 <strong>429 Too Many Requests</strong>, 서버 점검 중인 <strong>503 Service Unavailable</strong> 응답과 함께 옴</td><td><code>Retry-After: 120</code></td></tr>
         </table>
       </div>
     </div>
@@ -1546,8 +1548,8 @@ curl -sI -H "Origin: https://evil.com" https://타겟사이트.com/api | grep -i
         <table class="tbl">
           <tr><th>헤더</th><th>방향</th><th>설명</th><th>예시</th></tr>
           <tr><td><code>Authorization</code></td><td>요청</td><td>자격 증명 전달 (Bearer 토큰, Basic 인증 등)</td><td><code>Authorization: Bearer eyJhbGciOi...</code></td></tr>
-          <tr><td><code>WWW-Authenticate</code></td><td>응답</td><td>서버가 요구하는 인증 방식 — 401 응답과 함께 옴</td><td><code>WWW-Authenticate: Basic realm="Access"</code></td></tr>
-          <tr><td><code>Proxy-Authenticate</code> / <code>Proxy-Authorization</code></td><td>응답/요청</td><td>프록시 서버 인증용 — 407 응답과 함께 옴</td><td><code>Proxy-Authenticate: Basic</code></td></tr>
+          <tr><td><code>WWW-Authenticate</code></td><td>응답</td><td>서버가 요구하는 인증 방식 — 인증 안 됨을 뜻하는 <strong>401 Unauthorized</strong> 응답과 함께 옴</td><td><code>WWW-Authenticate: Basic realm="Access"</code></td></tr>
+          <tr><td><code>Proxy-Authenticate</code> / <code>Proxy-Authorization</code></td><td>응답/요청</td><td>프록시 서버 인증용 — 프록시 인증이 필요함을 뜻하는 <strong>407 Proxy Authentication Required</strong> 응답과 함께 옴</td><td><code>Proxy-Authenticate: Basic</code></td></tr>
           <tr><td><code>Link</code></td><td>응답</td><td>관련 리소스 링크 — 프리로드 힌트, 페이지네이션 등에 사용</td><td><code>Link: &lt;/style.css&gt;; rel=preload; as=style</code></td></tr>
           <tr><td><code>Server-Timing</code></td><td>응답</td><td>서버 내부 처리 단계별 소요 시간 — 성능 디버깅용, 브라우저 개발자도구에서 시각화됨</td><td><code>Server-Timing: db;dur=53, app;dur=112</code></td></tr>
           <tr><td><code>Trailer</code></td><td>응답</td><td>청크 전송(Transfer-Encoding: chunked) 마지막에 추가로 붙을 헤더를 미리 예고</td><td><code>Trailer: Expires</code></td></tr>
