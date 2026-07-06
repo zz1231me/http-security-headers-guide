@@ -4,6 +4,9 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>HTTP 보안 헤더 완전 레퍼런스 — Burp Suite 실전 가이드</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 /* ═══════════════════════════════════════════════════════
    색상 시스템 — 화이트 배경
@@ -39,8 +42,8 @@
   --burp-orange: #ffb86c;
   --burp-red:    #ff5555;
   --burp-comment:#6272a4;
-  --font-sans: -apple-system,BlinkMacSystemFont,'Segoe UI','Noto Sans KR',Helvetica,Arial,sans-serif;
-  --font-mono: 'SFMono-Regular','Consolas','Liberation Mono','Menlo',monospace;
+  --font-sans: 'Noto Sans KR',-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;
+  --font-mono: 'JetBrains Mono','SFMono-Regular','Consolas','Liberation Mono','Menlo',monospace;
   --r: 6px; --rl: 10px;
 }
 *{box-sizing:border-box;margin:0;padding:0;}
@@ -125,7 +128,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--font-sans);font-si
 .sdot{width:6px;height:6px;border-radius:50%;}
 
 /* ── 헤더 카드 ── */
-.content{padding:0 28px 44px;}
+.content{padding:0 28px 44px;max-width:1180px;margin:0 auto;}
 .cat{padding-top:30px;margin-bottom:4px;}
 .cat-lbl{display:flex;align-items:center;gap:9px;font-size:12px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;color:var(--text);margin-bottom:14px;padding-bottom:11px;border-bottom:2px solid var(--border);}
 .cat-badge{font-size:11px;padding:3px 9px;border-radius:20px;font-weight:800;}
@@ -271,6 +274,10 @@ body{background:var(--bg);color:var(--text);font-family:var(--font-sans);font-si
     <a href="#checklist"  class="sb-item"><span class="sb-dot" style="background:#28a745"></span>진단 체크리스트</a>
     <a href="#attack-map" class="sb-item"><span class="sb-dot" style="background:#28a745"></span>공격→헤더 매핑</a>
   </div>
+  <div class="sb-sec">
+    <div class="sb-lbl">⚪ 일반 HTTP 헤더</div>
+    <a href="#general-headers" class="sb-item"><span class="sb-dot" style="background:#6e7681"></span>보안 무관 참고 헤더</a>
+  </div>
 </nav>
 <!-- ══ MAIN ══ -->
 <div class="main">
@@ -290,6 +297,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--font-sans);font-si
   <p class="hero-desc">
     OWASP HTTP Headers Cheat Sheet, MDN Web Docs를 기준으로 모든 보안 헤더의 권장값과 설정법을 정리했습니다.
     Burp Suite로 실제 요청·응답을 분석하는 방법과 함께, 필수 헤더부터 Deprecated 헤더까지 폭넓게 다룹니다.
+    문서 맨 아래에는 보안과 무관하지만 실무에서 자주 보이는 <a href="#general-headers" style="color:var(--blue);">일반 HTTP 헤더 참고표</a>도 함께 정리해 두었습니다.
   </p>
   <div class="stat-grid">
     <div class="stat-card"><div class="stat-num" style="color:var(--red)">26</div><div class="stat-lbl">총 헤더 종류</div></div>
@@ -1434,6 +1442,115 @@ curl -sI -H "Origin: https://evil.com" https://타겟사이트.com/api | grep -i
           <tr><td><strong>비인가 교차 사이트 요청</strong></td><td>외부 사이트가 민감 API·리소스를 직접 호출/임베드</td><td><code>Sec-Fetch-Site</code>·<code>Sec-Fetch-Dest</code> 서버 검증</td></tr>
           <tr><td><strong>레거시 플러그인 데이터 탈취</strong></td><td>Flash·Acrobat이 관대한 크로스 도메인 정책 파일을 신뢰해 데이터 유출</td><td><code>X-Permitted-Cross-Domain-Policies: none</code></td></tr>
           <tr><td><strong>믹스드 콘텐츠</strong></td><td>HTTPS 페이지 안 http:// 리소스가 차단되거나 평문 전송</td><td><code>CSP upgrade-insecure-requests</code></td></tr>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── 일반 HTTP 헤더 (참고) ── -->
+  <div class="cat" id="general-headers">
+    <div class="cat-lbl"><span class="cat-badge sev-g">참고</span>보안과 무관한 일반 HTTP 헤더 — 실무에서 자주 보이는 나머지 헤더들</div>
+    <div class="notice n-i" style="margin-bottom:14px;"><span class="ni">ℹ️</span><div>여기부터는 보안 취약점과 직접 관련 없는, HTTP 통신에서 흔히 쓰이는 일반 헤더입니다. Burp에서 트래픽을 볼 때 자주 마주치므로 참고용으로 정리했습니다. (출처: MDN Web Docs, RFC 9110/9111/9112)</div></div>
+
+    <div class="hcard" style="margin-bottom:14px;">
+      <div style="padding:16px 18px 8px;"><div class="ibl" style="margin-bottom:0;">요청 기본 · 식별</div></div>
+      <div style="padding:0 18px 18px;">
+        <table class="tbl">
+          <tr><th>헤더</th><th>방향</th><th>설명</th><th>예시</th></tr>
+          <tr><td><code>Host</code></td><td>요청</td><td>요청 대상 호스트명+포트. HTTP/1.1부터 필수이며 가상 호스팅(한 서버에 여러 도메인)의 기준이 됨</td><td><code>Host: example.com</code></td></tr>
+          <tr><td><code>User-Agent</code></td><td>요청</td><td>클라이언트 소프트웨어 식별 (브라우저·OS·봇 등)</td><td><code>User-Agent: Mozilla/5.0 ...</code></td></tr>
+          <tr><td><code>Referer</code></td><td>요청</td><td>직전 페이지 URL (스펙 오타로 굳어진 철자). 보안 관점은 <a href="#rp">Referrer-Policy</a> 참고</td><td><code>Referer: https://example.com/page</code></td></tr>
+          <tr><td><code>Origin</code></td><td>요청</td><td>요청을 보낸 출처(scheme+host+port). CORS·POST 요청에서 주로 검증 대상</td><td><code>Origin: https://example.com</code></td></tr>
+          <tr><td><code>Date</code></td><td>요청/응답</td><td>메시지가 생성된 시각</td><td><code>Date: Mon, 06 Jul 2026 09:00:00 GMT</code></td></tr>
+        </table>
+      </div>
+    </div>
+
+    <div class="hcard" style="margin-bottom:14px;">
+      <div style="padding:16px 18px 8px;"><div class="ibl" style="margin-bottom:0;">콘텐츠 협상</div></div>
+      <div style="padding:0 18px 18px;">
+        <table class="tbl">
+          <tr><th>헤더</th><th>방향</th><th>설명</th><th>예시</th></tr>
+          <tr><td><code>Accept</code></td><td>요청</td><td>받을 수 있는 미디어 타입과 우선순위(q값)</td><td><code>Accept: text/html,application/xhtml+xml;q=0.9</code></td></tr>
+          <tr><td><code>Accept-Language</code></td><td>요청</td><td>선호 언어와 우선순위</td><td><code>Accept-Language: ko-KR,ko;q=0.9,en;q=0.8</code></td></tr>
+          <tr><td><code>Accept-Encoding</code></td><td>요청</td><td>클라이언트가 지원하는 압축 방식</td><td><code>Accept-Encoding: gzip, deflate, br</code></td></tr>
+          <tr><td><code>Accept-Charset</code></td><td>요청</td><td>선호 문자셋 — 현재는 사실상 UTF-8로 고정되어 거의 쓰이지 않음</td><td><code>Accept-Charset: utf-8</code></td></tr>
+          <tr><td><code>Vary</code></td><td>응답</td><td>캐시가 같은 URL이라도 이 헤더들의 값에 따라 응답을 구분 저장해야 함을 지시</td><td><code>Vary: Accept-Encoding, Accept-Language</code></td></tr>
+        </table>
+      </div>
+    </div>
+
+    <div class="hcard" style="margin-bottom:14px;">
+      <div style="padding:16px 18px 8px;"><div class="ibl" style="margin-bottom:0;">캐싱 · 조건부 요청</div></div>
+      <div style="padding:0 18px 18px;">
+        <table class="tbl">
+          <tr><th>헤더</th><th>방향</th><th>설명</th><th>예시</th></tr>
+          <tr><td><code>ETag</code></td><td>응답</td><td>리소스 버전을 나타내는 식별자(보통 해시값) — <code>If-None-Match</code>와 짝</td><td><code>ETag: "33a64df551425fcc"</code></td></tr>
+          <tr><td><code>Last-Modified</code></td><td>응답</td><td>리소스 마지막 수정 시각 — <code>If-Modified-Since</code>와 짝</td><td><code>Last-Modified: Tue, 15 Jun 2026 09:00:00 GMT</code></td></tr>
+          <tr><td><code>If-None-Match</code></td><td>요청</td><td>ETag가 다를 때만 새로 응답 (조건부 GET, 같으면 304)</td><td><code>If-None-Match: "33a64df551425fcc"</code></td></tr>
+          <tr><td><code>If-Modified-Since</code></td><td>요청</td><td>지정 시각 이후 변경된 경우에만 응답</td><td><code>If-Modified-Since: Tue, 15 Jun 2026 09:00:00 GMT</code></td></tr>
+          <tr><td><code>If-Match</code> / <code>If-Unmodified-Since</code></td><td>요청</td><td>리소스가 그 사이 변경되지 않았을 때만 처리 — PUT 등에서 동시 수정 충돌 방지</td><td><code>If-Match: "33a64df551425fcc"</code></td></tr>
+          <tr><td><code>Age</code></td><td>응답</td><td>캐시에 저장된 이후 경과 시간(초)</td><td><code>Age: 3600</code></td></tr>
+          <tr><td><code>Cache-Control</code></td><td>요청/응답</td><td>캐시 정책 지시 — 보안 관점은 <a href="#cc">Cache-Control</a> 섹션 참고</td><td><code>Cache-Control: max-age=3600</code></td></tr>
+        </table>
+      </div>
+    </div>
+
+    <div class="hcard" style="margin-bottom:14px;">
+      <div style="padding:16px 18px 8px;"><div class="ibl" style="margin-bottom:0;">콘텐츠 전송 · 범위 요청</div></div>
+      <div style="padding:0 18px 18px;">
+        <table class="tbl">
+          <tr><th>헤더</th><th>방향</th><th>설명</th><th>예시</th></tr>
+          <tr><td><code>Content-Length</code></td><td>요청/응답</td><td>본문 크기(바이트)</td><td><code>Content-Length: 4829</code></td></tr>
+          <tr><td><code>Content-Encoding</code></td><td>응답</td><td>본문에 적용된 압축 방식</td><td><code>Content-Encoding: gzip</code></td></tr>
+          <tr><td><code>Content-Language</code></td><td>응답</td><td>본문의 자연어</td><td><code>Content-Language: ko</code></td></tr>
+          <tr><td><code>Transfer-Encoding</code></td><td>응답</td><td>청크 단위 전송 여부 — 전체 크기를 모를 때 사용, <code>Content-Length</code>와 동시 사용 불가</td><td><code>Transfer-Encoding: chunked</code></td></tr>
+          <tr><td><code>Range</code></td><td>요청</td><td>리소스의 일부 구간만 요청 (다운로드 재개, 동영상 탐색 등)</td><td><code>Range: bytes=200-1000</code></td></tr>
+          <tr><td><code>Accept-Ranges</code> / <code>Content-Range</code></td><td>응답</td><td>서버가 범위 요청을 지원하는지, 실제로 보낸 범위가 전체 중 어디인지</td><td><code>Content-Range: bytes 200-1000/5000</code></td></tr>
+        </table>
+      </div>
+    </div>
+
+    <div class="hcard" style="margin-bottom:14px;">
+      <div style="padding:16px 18px 8px;"><div class="ibl" style="margin-bottom:0;">연결 관리 · 리다이렉션</div></div>
+      <div style="padding:0 18px 18px;">
+        <table class="tbl">
+          <tr><th>헤더</th><th>방향</th><th>설명</th><th>예시</th></tr>
+          <tr><td><code>Connection</code></td><td>요청/응답</td><td>이 연결을 유지할지 여부</td><td><code>Connection: keep-alive</code></td></tr>
+          <tr><td><code>Keep-Alive</code></td><td>응답</td><td>연결 유지 타임아웃과 최대 요청 수</td><td><code>Keep-Alive: timeout=5, max=1000</code></td></tr>
+          <tr><td><code>Upgrade</code></td><td>요청/응답</td><td>다른 프로토콜로 전환 요청 (예: HTTP → WebSocket)</td><td><code>Upgrade: websocket</code></td></tr>
+          <tr><td><code>Location</code></td><td>응답</td><td>리다이렉트 대상 URL(3xx) 또는 새로 생성된 리소스 위치(201)</td><td><code>Location: /login</code></td></tr>
+          <tr><td><code>Allow</code></td><td>응답</td><td>해당 리소스가 지원하는 HTTP 메서드 목록 — 405 응답과 함께 옴</td><td><code>Allow: GET, POST, HEAD</code></td></tr>
+          <tr><td><code>Retry-After</code></td><td>응답</td><td>언제 다시 요청해도 되는지 — 429·503 응답과 함께 옴</td><td><code>Retry-After: 120</code></td></tr>
+        </table>
+      </div>
+    </div>
+
+    <div class="hcard" style="margin-bottom:14px;">
+      <div style="padding:16px 18px 8px;"><div class="ibl" style="margin-bottom:0;">프록시 · 포워딩</div></div>
+      <div style="padding:0 18px 18px;">
+        <table class="tbl">
+          <tr><th>헤더</th><th>방향</th><th>설명</th><th>예시</th></tr>
+          <tr><td><code>Forwarded</code></td><td>요청</td><td>프록시를 거쳤는지, 원본 클라이언트가 누구인지 표준화된 형식으로 전달 (RFC 7239)</td><td><code>Forwarded: for=203.0.113.1;proto=https</code></td></tr>
+          <tr><td><code>X-Forwarded-For</code></td><td>요청</td><td>비표준이지만 사실상 표준. 클라이언트 원본 IP — 클라이언트가 직접 위조 가능하므로 신뢰 전 검증 필요</td><td><code>X-Forwarded-For: 203.0.113.1</code></td></tr>
+          <tr><td><code>X-Forwarded-Proto</code></td><td>요청</td><td>클라이언트가 실제 사용한 프로토콜 — 로드밸런서 뒤에서 원래 HTTPS였는지 판단할 때 필수</td><td><code>X-Forwarded-Proto: https</code></td></tr>
+          <tr><td><code>X-Forwarded-Host</code></td><td>요청</td><td>원본 Host 헤더 값</td><td><code>X-Forwarded-Host: example.com</code></td></tr>
+          <tr><td><code>Via</code></td><td>요청/응답</td><td>메시지가 거쳐온 프록시·게이트웨이 목록</td><td><code>Via: 1.1 proxy1</code></td></tr>
+        </table>
+      </div>
+    </div>
+
+    <div class="hcard" style="margin-bottom:14px;">
+      <div style="padding:16px 18px 8px;"><div class="ibl" style="margin-bottom:0;">인증 · 기타 유틸리티</div></div>
+      <div style="padding:0 18px 18px;">
+        <table class="tbl">
+          <tr><th>헤더</th><th>방향</th><th>설명</th><th>예시</th></tr>
+          <tr><td><code>Authorization</code></td><td>요청</td><td>자격 증명 전달 (Bearer 토큰, Basic 인증 등)</td><td><code>Authorization: Bearer eyJhbGciOi...</code></td></tr>
+          <tr><td><code>WWW-Authenticate</code></td><td>응답</td><td>서버가 요구하는 인증 방식 — 401 응답과 함께 옴</td><td><code>WWW-Authenticate: Basic realm="Access"</code></td></tr>
+          <tr><td><code>Proxy-Authenticate</code> / <code>Proxy-Authorization</code></td><td>응답/요청</td><td>프록시 서버 인증용 — 407 응답과 함께 옴</td><td><code>Proxy-Authenticate: Basic</code></td></tr>
+          <tr><td><code>Link</code></td><td>응답</td><td>관련 리소스 링크 — 프리로드 힌트, 페이지네이션 등에 사용</td><td><code>Link: &lt;/style.css&gt;; rel=preload; as=style</code></td></tr>
+          <tr><td><code>Server-Timing</code></td><td>응답</td><td>서버 내부 처리 단계별 소요 시간 — 성능 디버깅용, 브라우저 개발자도구에서 시각화됨</td><td><code>Server-Timing: db;dur=53, app;dur=112</code></td></tr>
+          <tr><td><code>Trailer</code></td><td>응답</td><td>청크 전송(Transfer-Encoding: chunked) 마지막에 추가로 붙을 헤더를 미리 예고</td><td><code>Trailer: Expires</code></td></tr>
         </table>
       </div>
     </div>
